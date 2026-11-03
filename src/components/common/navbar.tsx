@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
@@ -34,35 +34,36 @@ export function Navbar() {
         {/* Right: Navigation & Controls */}
         <nav aria-label="Primary Navigation" className="flex items-center gap-2 sm:gap-3">
           <div className="hidden md:flex items-center gap-1">
-            <Button variant="ghost" size="sm" render={<Link href="/#catalog" />}>
+            <Link
+              href="/#catalog"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
               Explore
-            </Button>
-            <Button variant="ghost" size="sm" render={<Link href="/#docs" />}>
+            </Link>
+            <Link
+              href="/#docs"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
               Documentation
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              render={
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              }
+            </Link> 
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
               GitHub
-            </Button>
+            </a>
           </div>
 
-          <Separator orientation="vertical" className="h-4 hidden sm:block" />
+          <Separator orientation="vertical" className="hidden sm:block" />
 
           {/* Persistent Theme Switcher */}
           <ThemeToggle />
 
           {/* Developer Chip: "Built by Anas" */}
           <a
-            href="https://github.com"
+            href="https://github.com/anas20023"
             target="_blank"
             rel="noopener noreferrer"
             title="Created by Anas"
@@ -85,4 +86,3 @@ export function Navbar() {
     </header>
   );
 }
-

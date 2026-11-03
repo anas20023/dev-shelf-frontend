@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { AlertCircle, RotateCcw, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -51,15 +52,16 @@ export default function ErrorBoundary({ error, reset }: ErrorProps) {
             <span>Try again</span>
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            render={<Link href="/" />}
-            className="w-full sm:w-auto gap-1.5"
+          <Link
+            href="/"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "w-full sm:w-auto gap-1.5"
+            )}
           >
             <Home className="size-3.5" />
             <span>Back to home</span>
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

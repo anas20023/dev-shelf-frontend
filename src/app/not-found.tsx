@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, SearchCode } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default function NotFound() {
   const popularCategories = [
@@ -38,31 +39,27 @@ export default function NotFound() {
           </span>
           <div className="flex flex-wrap gap-1.5">
             {popularCategories.map((c) => (
-              <Button
+              <Link
                 key={c.name}
-                variant="secondary"
-                size="xs"
-                render={<Link href={c.href} />}
+                href={c.href}
+                className={buttonVariants({ variant: "secondary", size: "xs" })}
               >
                 {c.name}
-              </Button>
+              </Link>
             ))}
           </div>
         </div>
 
         <div className="mt-6">
-          <Button
-            variant="default"
-            size="sm"
-            render={<Link href="/" />}
-            className="w-full gap-2"
+          <Link
+            href="/"
+            className={cn(buttonVariants({ variant: "default", size: "sm" }), "w-full gap-2")}
           >
             <ArrowLeft className="size-3.5" />
             <span>Return to DevShelf Catalog</span>
-          </Button>
+          </Link>
         </div>
       </div>
     </div>
   );
 }
-
