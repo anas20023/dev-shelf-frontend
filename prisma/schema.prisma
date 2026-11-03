@@ -35,6 +35,8 @@ model Resource {
   @@index([difficulty])
   @@index([stars])
   @@index([createdAt])
-  @@index([category, difficulty, stars(sort: Desc)])
+  @@index([category, id])
+  @@index([difficulty, id])
+  @@index([category, difficulty, id])
   @@index([category, stars(sort: Desc)])
 }

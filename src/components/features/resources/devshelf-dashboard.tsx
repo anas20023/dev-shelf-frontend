@@ -2,33 +2,37 @@
 
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Resource, Category, Difficulty, SortOption } from "@/lib/types";
+import { Resource, Category, Difficulty } from "@/lib/types";
 import { SearchSection } from "./search-section";
 import { ResourceGrid } from "./resource-grid";
 
 interface DevShelfDashboardProps {
   resources: Resource[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextCursor: string | null;
+  prevCursor: string | null;
+  currentCursor: string | null;
+  totalEstimatedCount: number;
   pageSize: number;
   initialQuery?: string;
   initialCategory?: Category;
   initialDifficulty?: Difficulty | "All";
-  initialSort?: SortOption;
   initialView?: "grid" | "list";
 }
 
 export function DevShelfDashboard({
   resources,
-  totalCount,
-  currentPage,
-  totalPages,
+  hasNextPage,
+  hasPrevPage,
+  nextCursor,
+  prevCursor,
+  currentCursor,
+  totalEstimatedCount,
   pageSize,
   initialQuery = "",
   initialCategory = "All Categories",
   initialDifficulty = "All",
-  initialSort = "stars",
   initialView = "grid",
 }: DevShelfDashboardProps) {
   const router = useRouter();
@@ -38,7 +42,7 @@ export function DevShelfDashboard({
 
   // Helper to build new query strings
   const updateQueryParams = React.useCallback(
-    (updates: Record<string, string | number | null>, shouldScroll: boolean = false) => {
+    (updates: Record<string, string | null>, shouldScroll: boolean = false) => {
       const current = new URLSearchParams(searchParams?.toString() ?? "");
 
       Object.entries(updates).forEach(([key, value]) => {
@@ -48,11 +52,6 @@ export function DevShelfDashboard({
           current.set(key, String(value));
         }
       });
-
-      // If page is 1, keep URL clean by removing page=1
-      if (current.get("page") === "1") {
-        current.delete("page");
-      }
 
       const queryString = current.toString();
       const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
@@ -72,27 +71,43 @@ export function DevShelfDashboard({
   );
 
   const handleSearchChange = (query: string) => {
-    updateQueryParams({ q: query || null, page: 1 });
+    updateQueryParams({ q: query || null, cursor: null, dir: null });
   };
 
   const handleCategoryChange = (cat: Category) => {
-    updateQueryParams({ category: cat === "All Categories" ? null : cat, page: 1 });
+    updateQueryParams({
+      category: cat === "All Categories" ? null : cat,
+      cursor: null,
+      dir: null,
+    });
   };
 
   const handleDifficultyChange = (diff: Difficulty | "All") => {
-    updateQueryParams({ difficulty: diff === "All" ? null : diff, page: 1 });
-  };
-
-  const handleSortChange = (sort: SortOption) => {
-    updateQueryParams({ sort: sort === "stars" ? null : sort, page: 1 });
+    updateQueryParams({
+      difficulty: diff === "All" ? null : diff,
+      cursor: null,
+      dir: null,
+    });
   };
 
   const handleViewModeChange = (mode: "grid" | "list") => {
     updateQueryParams({ view: mode === "grid" ? null : mode }, false);
   };
 
-  const handlePageChange = (page: number) => {
-    updateQueryParams({ page }, true);
+  const handleNextPage = () => {
+    if (nextCursor) {
+      updateQueryParams({ cursor: nextCursor, dir: "next" }, true);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (prevCursor) {
+      updateQueryParams({ cursor: prevCursor, dir: "prev" }, true);
+    }
+  };
+
+  const handleFirstPage = () => {
+    updateQueryParams({ cursor: null, dir: null }, true);
   };
 
   const handleResetFilters = () => {
@@ -102,7 +117,7 @@ export function DevShelfDashboard({
   };
 
   const handleQuickTagSelect = (tag: string) => {
-    updateQueryParams({ q: tag, page: 1 });
+    updateQueryParams({ q: tag, cursor: null, dir: null });
   };
 
   return (
@@ -116,19 +131,20 @@ export function DevShelfDashboard({
       />
       <ResourceGrid
         resources={resources}
-        totalCount={totalCount}
-        currentPage={currentPage}
-        totalPages={totalPages}
+        hasNextPage={hasNextPage}
+        hasPrevPage={hasPrevPage}
+        currentCursor={currentCursor}
+        totalEstimatedCount={totalEstimatedCount}
         pageSize={pageSize}
         searchQuery={initialQuery}
         category={initialCategory}
         difficulty={initialDifficulty}
-        sortBy={initialSort}
         viewMode={initialView}
         isPending={isPending}
-        onPageChange={handlePageChange}
+        onNextPage={handleNextPage}
+        onPrevPage={handlePrevPage}
+        onFirstPage={handleFirstPage}
         onDifficultyChange={handleDifficultyChange}
-        onSortChange={handleSortChange}
         onViewModeChange={handleViewModeChange}
         onResetFilters={handleResetFilters}
       />

@@ -24,9 +24,11 @@ export interface Resource {
   author?: string;
 }
 
-export interface PaginationMeta {
-  currentPage: number;
-  totalPages: number;
+export interface CursorPaginationMeta {
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextCursor: string | null;
+  prevCursor: string | null;
   pageSize: number;
-  totalCount: number;
+  totalEstimatedCount: number;
 }
