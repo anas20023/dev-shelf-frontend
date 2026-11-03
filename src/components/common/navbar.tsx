@@ -47,7 +47,7 @@ export function Navbar() {
               Documentation
             </Link> 
             <a
-              href="https://github.com"
+              href="https://github.com/anas20023"
               target="_blank"
               rel="noopener noreferrer"
               className={buttonVariants({ variant: "ghost", size: "sm" })}

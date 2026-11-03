@@ -100,7 +100,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/anas20023"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors"
@@ -144,7 +144,7 @@ export function Footer() {
 
           <div className="flex items-center gap-3">
             <a
-              href="https://github.com"
+              href="https://github.com/anas20023"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded"
