@@ -45,12 +45,22 @@ export function SearchSection({
   const [internalQuery, setInternalQuery] = React.useState(searchQuery);
   const [prevSearchQuery, setPrevSearchQuery] = React.useState(searchQuery);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Synchronize internal state with prop without cascading render effect
   if (prevSearchQuery !== searchQuery) {
     setPrevSearchQuery(searchQuery);
     setInternalQuery(searchQuery);
   }
+
+  // Clear debounce timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Keyboard shortcut: '/' to focus search, 'Escape' to clear
   React.useEffect(() => {
@@ -63,6 +73,7 @@ export function SearchSection({
         e.preventDefault();
         inputRef.current?.focus();
       } else if (e.key === "Escape" && document.activeElement === inputRef.current) {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         setInternalQuery("");
         onSearchChange?.("");
         inputRef.current?.blur();
@@ -76,10 +87,20 @@ export function SearchSection({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInternalQuery(val);
-    onSearchChange?.(val);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      onSearchChange?.(val);
+    }, 400);
   };
 
   const handleClear = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     setInternalQuery("");
     onSearchChange?.("");
     inputRef.current?.focus();
@@ -87,6 +108,9 @@ export function SearchSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     onSearchChange?.(internalQuery);
   };
 
@@ -95,8 +119,8 @@ export function SearchSection({
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Understated index status */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-background text-xs text-muted-foreground mb-5">
-          <span className="size-1.5 rounded-full bg-emerald-500" />
-          <span className="font-mono">1,048,576 records indexed</span>
+          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-mono">1,000,000+ records indexed</span>
         </div>
 
         {/* H1 Heading - clean, authoritative sentence-case, no split colors */}
@@ -196,4 +220,3 @@ export function SearchSection({
     </section>
   );
 }
-

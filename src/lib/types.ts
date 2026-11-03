@@ -9,6 +9,8 @@ export type Category =
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
+export type SortOption = "stars" | "newest" | "title" | "difficulty";
+
 export interface Resource {
   id: string;
   title: string;
@@ -22,3 +24,9 @@ export interface Resource {
   author?: string;
 }
 
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
+}

@@ -1,19 +1,101 @@
+import { Prisma } from "@prisma/client";
 import { INITIAL_RESOURCES } from "@/lib/data";
 import { DevShelfDashboard } from "@/components/features/resources/devshelf-dashboard";
 import { NewsletterSection } from "@/components/features/resources/newsletter-section";
 import { prisma } from "@/lib/prisma";
-import { Resource } from "@/lib/types";
+import { Resource, Category, Difficulty, SortOption } from "@/lib/types";
 
-export const revalidate = 60;
+const PAGE_SIZE = 20;
 
-export default async function Home() {
-  let resources: Resource[] = INITIAL_RESOURCES;
+interface PageProps {
+  searchParams: Promise<{
+    page?: string;
+    q?: string;
+    category?: string;
+    difficulty?: string;
+    sort?: string;
+    view?: string;
+  }>;
+}
+
+export default async function Home({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  const rawPage = parseInt(params.page || "1", 10);
+  const currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+
+  const query = typeof params.q === "string" ? params.q.trim() : "";
+  const categoryParam = typeof params.category === "string" ? params.category : "All Categories";
+  const difficultyParam =
+    typeof params.difficulty === "string" && ["Beginner", "Intermediate", "Advanced"].includes(params.difficulty)
+      ? (params.difficulty as Difficulty)
+      : "All";
+  const sortParam =
+    typeof params.sort === "string" && ["stars", "newest", "title", "difficulty"].includes(params.sort)
+      ? (params.sort as SortOption)
+      : "stars";
+  const viewParam = params.view === "list" ? "list" : "grid";
+
+  // Build Prisma Where
+  const where: Prisma.ResourceWhereInput = {};
+
+  if (categoryParam && categoryParam !== "All Categories") {
+    where.category = { equals: categoryParam };
+  }
+
+  if (difficultyParam && difficultyParam !== "All") {
+    where.difficulty = { equals: difficultyParam };
+  }
+
+  if (query) {
+    where.OR = [
+      { title: { contains: query, mode: "insensitive" } },
+      { description: { contains: query, mode: "insensitive" } },
+      { tags: { has: query.startsWith("#") ? query : `#${query}` } },
+      { tags: { has: query } },
+    ];
+  }
+
+  // Build Prisma OrderBy
+  let orderBy: Prisma.ResourceOrderByWithRelationInput = { stars: "desc" };
+  if (sortParam === "newest") {
+    orderBy = { createdAt: "desc" };
+  } else if (sortParam === "title") {
+    orderBy = { title: "asc" };
+  } else if (sortParam === "difficulty") {
+    orderBy = { difficulty: "asc" };
+  }
+
+  let resources: Resource[] = [];
+  let totalCount = 0;
 
   try {
-    const dbResources = await prisma.resource.findMany({
-      take: 20,
-      orderBy: { createdAt: "desc" },
-    });
+    const hasFilters = Boolean(
+      query ||
+      (categoryParam && categoryParam !== "All Categories") ||
+      (difficultyParam && difficultyParam !== "All")
+    );
+
+    const skip = (currentPage - 1) * PAGE_SIZE;
+
+    // Optimized count calculation:
+    // If no filters are active, use PostgreSQL reltuples from pg_class for instant sub-millisecond response on 2M+ rows.
+    // If filters are active, use indexed prisma.resource.count({ where }).
+    const [dbResources, count] = await Promise.all([
+      prisma.resource.findMany({
+        where,
+        skip,
+        take: PAGE_SIZE,
+        orderBy,
+      }),
+      hasFilters
+        ? prisma.resource.count({ where })
+        : prisma.$queryRawUnsafe<{ count: bigint }[]>(
+            `SELECT reltuples::bigint AS count FROM pg_class WHERE relname = 'Resource'`
+          ).then((rows) => Number(rows[0]?.count ?? 2000000)),
+    ]);
+
+    totalCount = count;
 
     if (dbResources.length > 0) {
       resources = dbResources.map((r) => ({
@@ -30,13 +112,28 @@ export default async function Home() {
       }));
     }
   } catch (error) {
-    console.error("Failed to fetch resources from database, using fallback:", error);
+    console.error("Database query failed, using fallback:", error);
+    resources = INITIAL_RESOURCES;
+    totalCount = INITIAL_RESOURCES.length;
   }
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <>
-      {/* Search & Hero Section + Resource Catalog Grid */}
-      <DevShelfDashboard initialResources={resources} />
+      {/* Server-Side Paginated Dashboard */}
+      <DevShelfDashboard
+        resources={resources}
+        totalCount={totalCount}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={PAGE_SIZE}
+        initialQuery={query}
+        initialCategory={categoryParam as Category}
+        initialDifficulty={difficultyParam}
+        initialSort={sortParam}
+        initialView={viewParam}
+      />
 
       {/* Newsletter Subscription Callout */}
       <NewsletterSection />
