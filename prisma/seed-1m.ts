@@ -1,4 +1,4 @@
-import { prisma } from "../src/lib/prisma";
+import  prisma  from "../src/lib/prisma";
 
 async function main() {
   console.log("⚡ Starting 1,000,000 Users and Resources high-throughput seed...");

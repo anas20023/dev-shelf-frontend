@@ -1,4 +1,4 @@
-import { prisma } from "../src/lib/prisma";
+import  prisma  from "../src/lib/prisma";
 import { INITIAL_RESOURCES } from "../src/lib/data";
 
 async function main() {
