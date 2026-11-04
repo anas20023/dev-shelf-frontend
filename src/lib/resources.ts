@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { Prisma } from "@prisma/client";
-import  prisma  from "./prisma";
+import { getPrismaClient } from "./prisma";
 import { Resource } from "./types";
 
 export interface GetResourcesResult {
@@ -44,6 +44,7 @@ async function fetchResourcesDirect(
   difficulty: string,
   pageSize: number
 ): Promise<GetResourcesResult> {
+  const prisma = getPrismaClient();
   const where: Prisma.ResourceWhereInput = {};
 
   if (category && category !== "All Categories") {

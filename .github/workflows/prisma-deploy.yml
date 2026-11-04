@@ -29,6 +29,7 @@ jobs:
       - uses: prisma/cloud-deploy-action@v1
         with:
           build-command: npm run build
+          prisma-version: 8.0.0-rc.30
 
   teardown:
     # The delete event also fires for tags; only branch deletions map to a preview.
