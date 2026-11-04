@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { Prisma } from "@prisma/client";
-import { prisma } from "./prisma";
-import { Resource, Category, Difficulty } from "./types";
+import  prisma  from "./prisma";
+import { Resource } from "./types";
 
 export interface GetResourcesResult {
   resources: Resource[];
