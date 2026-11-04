@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import app from "../../service.ts";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -8,9 +9,15 @@ export function getPrismaClient() {
     return globalForPrisma.prisma;
   }
 
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString: string | undefined;
+  try {
+    connectionString = app.load().db.url;
+  } catch {
+    connectionString = process.env.DATABASE_URL;
+  }
+
   if (!connectionString) {
-    throw new Error("DATABASE_URL environment variable is not set");
+    throw new Error("Prisma Compute database connection is not available");
   }
 
   const adapter = new PrismaPg({ connectionString });
