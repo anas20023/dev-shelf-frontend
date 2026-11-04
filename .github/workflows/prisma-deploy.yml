@@ -43,4 +43,5 @@ jobs:
           cache: npm
       - uses: prisma/cloud-deploy-action@v1
         with:
-          teardown: true
+          mode: destroy
+          stage: ${{ github.event.ref }}

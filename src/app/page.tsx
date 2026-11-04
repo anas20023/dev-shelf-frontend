@@ -7,6 +7,7 @@ import { Category, Difficulty } from "@/lib/types";
 const PAGE_SIZE = 20;
 
 // Enable Incremental Static Regeneration / Next.js segment revalidation Rechecked
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 interface PageProps {
