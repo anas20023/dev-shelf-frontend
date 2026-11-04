@@ -12,6 +12,9 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 jobs:
   deploy:
     if: github.event_name == 'push'
@@ -41,4 +44,3 @@ jobs:
       - uses: prisma/cloud-deploy-action@v1
         with:
           teardown: true
-
